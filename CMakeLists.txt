@@ -1,0 +1,132 @@
+cmake_minimum_required (VERSION 3.8)
+
+MESSAGE(STATUS "platform: ${CMAKE_SYSTEM_NAME} ")
+IF (CMAKE_SYSTEM_NAME MATCHES "Linux")
+    set(ME_COM
+        ME_COM_COMPILER=1
+        ME_COM_LIB=1
+        ME_COM_MATRIXSSL=0
+        ME_COM_MBEDTLS=1
+        ME_COM_MPR=1
+        ME_COM_NANOSSL=0
+        ME_COM_OPENSSL=0
+        ME_COM_OSDEP=1
+        ME_COM_PCRE=1
+        ME_COM_SSL=1
+        ME_COM_VXWORKS=0
+        -D_REENTRANT
+        -DPIC
+    )
+    set(sys_libs
+        -lrt
+        -ldl
+        -lpthread
+        -lm
+    )
+ELSEIF (CMAKE_SYSTEM_NAME MATCHES "Windows")
+    message(WARNING "${CMAKE_SYSTEM_NAME} Not Supported")
+ELSEIF (CMAKE_SYSTEM_NAME MATCHES "FreeBSD")
+    set(sys_libs
+        -ldl
+        -lpthread
+        -lm
+    )
+    message(WARNING "${CMAKE_SYSTEM_NAME} Not Supported")
+ELSEIF (CMAKE_SYSTEM_NAME MATCHES "Darwin")
+    set(sys_libs
+        -ldl
+        -lpthread
+        -lm
+    )
+    message(WARNING "${CMAKE_SYSTEM_NAME} Not Supported")
+ELSEIF (CMAKE_SYSTEM_NAME MATCHES "VxWorks")
+    message(WARNING "VxWorks Not Supported")
+ELSE ()
+    message(WARNING "${CMAKE_SYSTEM_NAME} Not Supported")
+ENDIF (CMAKE_SYSTEM_NAME MATCHES "Linux")
+
+file(COPY platform/me.${CMAKE_SYSTEM_NAME} DESTINATION inc)
+file(RENAME inc/me.${CMAKE_SYSTEM_NAME} inc/me.h)
+
+include_directories(deps/http/)
+include_directories(deps/mbedtls/)
+include_directories(deps/mpr/)
+include_directories(deps/mpr-mbedtls/)
+include_directories(deps/mpr-openssl/)
+include_directories(deps/osdep/)
+include_directories(deps/pcre/)
+include_directories(inc/)
+
+
+if(CMAKE_COMPILER_IS_GNUCXX)
+    SET (CMAKE_CXX_FLAGS "-std=c++11 -pthread -g")
+else(CMAKE_COMPILER_IS_GNUCXX)
+    SET (CMAKE_CXX_FLAGS "-D_WIN32_WINNT=0x0501 /EHsc")
+endif(CMAKE_COMPILER_IS_GNUCXX)
+
+add_compile_options(-fPIC -w)
+
+set(LIBRARY_OUTPUT_PATH build/lib) 
+set(EXECUTABLE_OUTPUT_PATH build/out)
+
+
+
+add_library(pcre ./deps/pcre/pcre.c)
+add_library(mpr ./deps/mpr/mprLib.c)
+add_library(mpr-mbedtls ./deps/mpr-mbedtls/mpr-mbedtls.c)
+add_library(http ./deps/http/httpLib.c)
+add_library(mbedtls ./deps/mbedtls/mbedtls.c)
+
+link_directories(${LIBRARY_OUTPUT_PATH})
+
+set(self_build_libs
+    -lhttp
+    -lpcre
+    -lmpr
+    -lmpr-mbedtls
+    -lmbedtls
+)
+
+add_executable (mo "server.c")
+
+target_compile_definitions(pcre
+    PRIVATE
+    ${ME_COM}
+)
+
+target_compile_definitions(mpr
+    PRIVATE
+    ${ME_COM}
+    MBEDTLS_USER_CONFIG_FILE="embedtls.h"        
+)
+
+target_compile_definitions(mpr-mbedtls
+    PRIVATE
+    ${ME_COM}
+    MBEDTLS_USER_CONFIG_FILE="embedtls.h"        
+)
+
+target_compile_definitions(http
+    PRIVATE
+    ${ME_COM}
+    MBEDTLS_USER_CONFIG_FILE="embedtls.h"        
+)
+
+target_compile_definitions(mbedtls
+    PRIVATE
+    ${ME_COM}
+    MBEDTLS_USER_CONFIG_FILE="embedtls.h"        
+)
+
+target_link_libraries(mo
+    ${sys_libs}
+    ${self_build_libs}
+)
+
+
+#add_library(mpr-openssl ./deps/mpr-openssl/mpr-openssl.c)
+
+#target_compile_definitions(mpr-openssl
+#    PRIVATE
+#    ${ME_COM}
+#)
