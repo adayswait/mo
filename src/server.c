@@ -17,8 +17,9 @@ static void doAction(HttpConn *conn)
     httpSetHeaderString(conn, "Cache-Control", "no-cache");
 
     httpWrite(q, "<html><title>v1/action</title><body>\r\n");
-    httpWrite(q, "<p>Name: %s</p>\n", httpGetParam(conn, "name", "unspecified"));
-    httpWrite(q, "<p>Address: %s</p>\n", httpGetParam(conn, "address", "unspecified"));
+    httpWrite(q, "<p>param: %s</p>\n", httpGetParam(conn, "param", "undefined"));
+    httpWrite(q, "<p>method: %s</p>\n", conn->rx->method);
+    httpWrite(q, "<p>client: %s:%d</p>\n", conn->ip, conn->port);
     httpWrite(q, "</body></html>\r\n");
 
     /*
@@ -27,7 +28,7 @@ static void doAction(HttpConn *conn)
      */
     httpFinalize(conn);
 
-#if POSSIBLE
+#if 0
     /*
         Useful things to do in actions
      */
