@@ -1,5 +1,7 @@
 cmake_minimum_required (VERSION 3.8)
 
+project(mo)
+
 MESSAGE(STATUS "platform: ${CMAKE_SYSTEM_NAME} ")
 IF (CMAKE_SYSTEM_NAME MATCHES "Linux")
     set(ME_COM
@@ -40,7 +42,7 @@ ELSEIF (CMAKE_SYSTEM_NAME MATCHES "Darwin")
     )
     message(WARNING "${CMAKE_SYSTEM_NAME} Not Supported")
 ELSEIF (CMAKE_SYSTEM_NAME MATCHES "VxWorks")
-    message(WARNING "VxWorks Not Supported")
+    message(WARNING "${CMAKE_SYSTEM_NAME} Not Supported")
 ELSE ()
     message(WARNING "${CMAKE_SYSTEM_NAME} Not Supported")
 ENDIF (CMAKE_SYSTEM_NAME MATCHES "Linux")
@@ -56,13 +58,6 @@ include_directories(deps/mpr-openssl/)
 include_directories(deps/osdep/)
 include_directories(deps/pcre/)
 include_directories(inc/)
-
-
-if(CMAKE_COMPILER_IS_GNUCXX)
-    SET (CMAKE_CXX_FLAGS "-std=c++11 -pthread -g")
-else(CMAKE_COMPILER_IS_GNUCXX)
-    SET (CMAKE_CXX_FLAGS "-D_WIN32_WINNT=0x0501 /EHsc")
-endif(CMAKE_COMPILER_IS_GNUCXX)
 
 add_compile_options(-fPIC -w)
 
@@ -87,7 +82,10 @@ set(self_build_libs
     -lmbedtls
 )
 
-add_executable (mo "server.c")
+add_executable (mo 
+    "src/server.c"
+    "src/config.c"
+)
 
 target_compile_definitions(pcre
     PRIVATE
