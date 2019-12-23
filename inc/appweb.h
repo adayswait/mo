@@ -18,7 +18,7 @@ extern "C"
 {
 #endif
 
-    /********************************* Tunables ***********************************/
+/********************************* Tunables ***********************************/
 
 #define MA_UNLOAD_TIMEOUT "5mins" /**< Default module inactivity timeout */
 
@@ -57,33 +57,33 @@ extern "C"
  */
 #define MA_PARSE_NON_SERVER 0x1 /**< Command file being parsed by a utility program */
 
-    /**
+   /**
     Current configuration parse state
     @stability Evolving
     @defgroup MaState MaState
     @see MaDirective MaState maAddDirective maArchiveLog maPopState maPushState maTokenize
     @stability Evolving
  */
-    typedef struct MaState
-    {
-        HttpHost *host;          /**< Current host */
-        HttpAuth *auth;          /**< Quick alias for route->auth */
-        HttpRoute *route;        /**< Current route */
-        MprFile *file;           /**< Config file handle */
-        char *key;               /**< Current directive being parsed */
-        char *configDir;         /**< Directory containing config file */
-        char *filename;          /**< Config file name */
-        char *endpoints;         /**< Virtual host endpoints */
-        char *data;              /**< Config data (managed) */
-        int lineNumber;          /**< Current line number */
-        int enabled;             /**< True if the current block is enabled */
-        int flags;               /**< Parsing flags */
-        struct MaState *prev;    /**< Previous (inherited) state */
-        struct MaState *top;     /**< Top level state */
-        struct MaState *current; /**< Current state */
-    } MaState;
+   typedef struct MaState
+   {
+      HttpHost *host;          /**< Current host */
+      HttpAuth *auth;          /**< Quick alias for route->auth */
+      HttpRoute *route;        /**< Current route */
+      MprFile *file;           /**< Config file handle */
+      char *key;               /**< Current directive being parsed */
+      char *configDir;         /**< Directory containing config file */
+      char *filename;          /**< Config file name */
+      char *endpoints;         /**< Virtual host endpoints */
+      char *data;              /**< Config data (managed) */
+      int lineNumber;          /**< Current line number */
+      int enabled;             /**< True if the current block is enabled */
+      int flags;               /**< Parsing flags */
+      struct MaState *prev;    /**< Previous (inherited) state */
+      struct MaState *top;     /**< Top level state */
+      struct MaState *current; /**< Current state */
+   } MaState;
 
-    /**
+   /**
     Appweb configuration file directive parsing callback function
     @description Directive callbacks are invoked to parse a directive. Directive callbacks are registered using
         #maAddDirective.
@@ -94,9 +94,9 @@ extern "C"
     @ingroup MaState
     @stability Evolving
  */
-    typedef int(MaDirective)(MaState *state, cchar *key, cchar *value);
+   typedef int(MaDirective)(MaState *state, cchar *key, cchar *value);
 
-    /**
+   /**
     Define a new appweb configuration file directive
     @description The appweb configuration file parse is extensible. New directives can be registered by this call. When
         encountered in the config file, the given callback proc will be invoked to parse.
@@ -105,9 +105,9 @@ extern "C"
     @ingroup MaState
     @stability Evolving
  */
-    PUBLIC void maAddDirective(cchar *directive, MaDirective proc);
+   PUBLIC void maAddDirective(cchar *directive, MaDirective proc);
 
-    /** 
+   /** 
     Configure a web server
     @description This will configure a web server based on either a configuration file or using the supplied
         IP address and port. 
@@ -120,9 +120,9 @@ extern "C"
     @ingroup MaState
     @stability Evolving
  */
-    PUBLIC int maConfigureServer(cchar *configFile, cchar *home, cchar *documents, cchar *ip, int port);
+   PUBLIC int maConfigureServer(cchar *configFile, cchar *home, cchar *documents, cchar *ip, int port);
 
-    /**
+   /**
     Get the argument in a directive
     @description Break into arguments. Args may be quoted. An outer quoting of the entire arg is removed.
     @param s String to examine
@@ -131,9 +131,9 @@ extern "C"
     @ingroup MaState
     @stability Evolving
 */
-    PUBLIC char *maGetNextArg(char *s, char **tok);
+   PUBLIC char *maGetNextArg(char *s, char **tok);
 
-    /**
+   /**
     Load an appweb module
     @description Load an appweb module. If the module is already loaded, this call will return successfully without
         reloading. Modules can be dynamically loaded or may also be pre-loaded using static linking.
@@ -143,17 +143,17 @@ extern "C"
     @ingroup MaState
     @stability Evolving
  */
-    PUBLIC int maLoadModule(cchar *name, cchar *libname);
+   PUBLIC int maLoadModule(cchar *name, cchar *libname);
 
-    /**
+   /**
     Load default modules
     @return Zero if successful, otherwise a negative Mpr error code. See the Appweb log for diagnostics.
     @ingroup MaState
     @stability Prototype
  */
-    PUBLIC int maLoadModules();
+   PUBLIC int maLoadModules();
 
-    /**
+   /**
     Parse an Appweb configuration file
     @description Parse the configuration file and configure the server. This creates a default host and route
         and then configures the server based on config file directives.
@@ -162,9 +162,9 @@ extern "C"
     @ingroup MaState
     @stability Evolving
  */
-    PUBLIC int maParseConfig(cchar *path);
+   PUBLIC int maParseConfig(cchar *path);
 
-    /**
+   /**
     Parse a configuration file
     @param state Current state level object
     @param path Filename to parse
@@ -172,9 +172,9 @@ extern "C"
     @ingroup MaState
     @stability Prototype
  */
-    PUBLIC int maParseFile(MaState *state, cchar *path);
+   PUBLIC int maParseFile(MaState *state, cchar *path);
 
-    /**
+   /**
     Pop the state 
     @description This is used when parsing config files to handle nested include files and block level directives
     @param state Current state
@@ -182,9 +182,9 @@ extern "C"
     @ingroup MaState
     @stability Evolving
  */
-    PUBLIC MaState *maPopState(MaState *state);
+   PUBLIC MaState *maPopState(MaState *state);
 
-    /**
+   /**
     Push the state 
     @description This is used when parsing config files to handle nested include files and block level directives
     @param state Current state
@@ -192,9 +192,9 @@ extern "C"
     @ingroup MaState
     @stability Evolving
  */
-    PUBLIC MaState *maPushState(MaState *state);
+   PUBLIC MaState *maPushState(MaState *state);
 
-    /**
+   /**
     Tokenize a string based on route data
     @description This is a utility routine to parse a string into tokens given a format specifier. 
     Mandatory tokens can be specified with "%" format specifier. Optional tokens are specified with "?" format. 
@@ -215,9 +215,9 @@ extern "C"
     @ingroup MaState
     @stability Evolving
  */
-    PUBLIC bool maTokenize(MaState *state, cchar *str, cchar *fmt, ...);
+   PUBLIC bool maTokenize(MaState *state, cchar *str, cchar *fmt, ...);
 
-    /** 
+   /** 
     Create and run a simple web server listening on a single IP address.
     @description Create a simple web server without using a configuration file. The server is created to listen on
         the specified IP address and port. This routine provides a one-line embedding of Appweb. If you want to 
@@ -230,9 +230,9 @@ extern "C"
     @ingroup MaState
     @stability Evolving
  */
-    PUBLIC int maRunSimpleWebServer(cchar *ip, int port, cchar *home, cchar *documents);
+   PUBLIC int maRunSimpleWebServer(cchar *ip, int port, cchar *home, cchar *documents);
 
-    /** 
+   /** 
     Create and run a web server based on a configuration file
     @description Create a web server configuration based on the supplied config file. This routine provides 
         a one-line embedding of Appweb. If you don't want to use a config file, try the #maRunSimpleWebServer 
@@ -242,9 +242,9 @@ extern "C"
     @ingroup MaState
     @stability Evolving
  */
-    PUBLIC int maRunWebServer(cchar *configFile);
+   PUBLIC int maRunWebServer(cchar *configFile);
 
-    /**
+   /**
     Save the authorization configuration to a file
     AuthFile schema:
         User name password abilities...
@@ -256,13 +256,13 @@ extern "C"
     @stability Internal
     @internal 
  */
-    PUBLIC int maWriteAuthFile(HttpAuth *auth, char *path);
+   PUBLIC int maWriteAuthFile(HttpAuth *auth, char *path);
 
-    /*
+   /*
     Internal
  */
-    PUBLIC int httpCgiInit(Http *http, MprModule *mp);
-    PUBLIC int httpEspInit(Http *http, MprModule *mp);
+   PUBLIC int httpCgiInit(Http *http, MprModule *mp);
+   PUBLIC int httpEspInit(Http *http, MprModule *mp);
 
 #ifdef __cplusplus
 } /* extern C */
