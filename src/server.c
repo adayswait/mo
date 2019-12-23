@@ -11,13 +11,15 @@ static void doAction(HttpConn *conn)
     httpSetStatus(conn, 200);
 
     /*
-        Add desired headers. "Set" will overwrite, add will create if not already defined.
+        Add desired headers. "Set" will overwrite, add will create if not
+        already defined.
      */
     httpAddHeaderString(conn, "Content-Type", "text/html");
     httpSetHeaderString(conn, "Cache-Control", "no-cache");
 
     httpWrite(q, "<html><title>v1/action</title><body>\r\n");
-    httpWrite(q, "<p>param: %s</p>\n", httpGetParam(conn, "param", "undefined"));
+    httpWrite(q, "<p>param: %s</p>\n",
+              httpGetParam(conn, "param", "undefined"));
     httpWrite(q, "<p>method: %s</p>\n", conn->rx->method);
     httpWrite(q, "<p>client: %s:%d</p>\n", conn->ip, conn->port);
     httpWrite(q, "</body></html>\r\n");
