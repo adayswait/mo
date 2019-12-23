@@ -2,8 +2,8 @@ cmake_minimum_required (VERSION 3.8)
 
 project(mo)
 
-MESSAGE(STATUS "platform: ${CMAKE_SYSTEM_NAME} ")
-IF (CMAKE_SYSTEM_NAME MATCHES "Linux")
+message(status "platform: ${CMAKE_SYSTEM_NAME} ")
+if(CMAKE_SYSTEM_NAME MATCHES "Linux")
     set(ME_COM
         ME_COM_COMPILER=1
         ME_COM_LIB=1
@@ -25,30 +25,35 @@ IF (CMAKE_SYSTEM_NAME MATCHES "Linux")
         -lpthread
         -lm
     )
-ELSEIF (CMAKE_SYSTEM_NAME MATCHES "Windows")
-    message(WARNING "${CMAKE_SYSTEM_NAME} Not Supported")
-ELSEIF (CMAKE_SYSTEM_NAME MATCHES "FreeBSD")
-    set(sys_libs
-        -ldl
-        -lpthread
-        -lm
-    )
-    message(WARNING "${CMAKE_SYSTEM_NAME} Not Supported")
-ELSEIF (CMAKE_SYSTEM_NAME MATCHES "Darwin")
-    set(sys_libs
-        -ldl
-        -lpthread
-        -lm
-    )
-    message(WARNING "${CMAKE_SYSTEM_NAME} Not Supported")
-ELSEIF (CMAKE_SYSTEM_NAME MATCHES "VxWorks")
-    message(WARNING "${CMAKE_SYSTEM_NAME} Not Supported")
-ELSE ()
-    message(WARNING "${CMAKE_SYSTEM_NAME} Not Supported")
-ENDIF (CMAKE_SYSTEM_NAME MATCHES "Linux")
+elseif(CMAKE_SYSTEM_NAME MATCHES "Windows")
 
-file(COPY platform/me.${CMAKE_SYSTEM_NAME} DESTINATION inc)
-file(RENAME inc/me.${CMAKE_SYSTEM_NAME} inc/me.h)
+elseif(CMAKE_SYSTEM_NAME MATCHES "FreeBSD")
+    set(sys_libs
+        -ldl
+        -lpthread
+        -lm
+    )
+    message(WARNING "${CMAKE_SYSTEM_NAME} Not Supported")
+elseif(CMAKE_SYSTEM_NAME MATCHES "Darwin")
+    set(sys_libs
+        -ldl
+        -lpthread
+        -lm
+    )
+    message(WARNING "${CMAKE_SYSTEM_NAME} Not Supported")
+elseif(CMAKE_SYSTEM_NAME MATCHES "VxWorks")
+    message(WARNING "${CMAKE_SYSTEM_NAME} Not Supported")
+else()
+    message(WARNING "${CMAKE_SYSTEM_NAME} Not Supported")
+endif(CMAKE_SYSTEM_NAME MATCHES "Linux")
+if(CMAKE_SYSTEM_NAME MATCHES "Windows")
+
+else(CMAKE_SYSTEM_NAME MATCHES "Windows")
+    add_compile_options(-fPIC -w)
+    file(COPY platform/me.${CMAKE_SYSTEM_NAME} DESTINATION inc)
+    file(RENAME inc/me.${CMAKE_SYSTEM_NAME} inc/me.h)
+endif(CMAKE_SYSTEM_NAME MATCHES "Windows")
+
 
 include_directories(deps/http/)
 include_directories(deps/mbedtls/)
@@ -59,7 +64,7 @@ include_directories(deps/osdep/)
 include_directories(deps/pcre/)
 include_directories(inc/)
 
-add_compile_options(-fPIC -w)
+
 
 set(LIBRARY_OUTPUT_PATH build/lib) 
 set(EXECUTABLE_OUTPUT_PATH build/out)
@@ -75,17 +80,19 @@ add_library(mbedtls ./deps/mbedtls/mbedtls.c)
 link_directories(${LIBRARY_OUTPUT_PATH})
 
 set(self_build_libs
-    -lhttp
-    -lpcre
-    -lmpr
-    -lmpr-mbedtls
-    -lmbedtls
+    http
+    pcre
+    mpr
+    mpr-mbedtls
+    mbedtls
 )
 
 add_executable (mo 
     "src/server.c"
     "src/config.c"
 )
+
+
 
 target_compile_definitions(pcre
     PRIVATE
