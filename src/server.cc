@@ -1,7 +1,9 @@
 #include "appweb.h"
+#include <iostream>
 
 static void doAction(HttpConn *conn)
 {
+    std::cout << "handling" << std::endl;
     HttpQueue *q;
 
     q = conn->writeq;
@@ -42,7 +44,7 @@ static void doAction(HttpConn *conn)
 /*
     Create a simple stand-alone web server
  */
-int main(int argc, char **argv, char **envp)
+int main(int argc, char **argv)
 {
     Mpr *mpr;
     int rc;

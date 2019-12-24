@@ -1,8 +1,12 @@
 cmake_minimum_required (VERSION 3.8)
 
-project(mo)
+project(mo CXX C)
+
+set (CMAKE_CXX_FLAGS "-std=c++11")
+set (CMAKE_C_FLAGS "-std=gnu11")
 
 message(status "platform: ${CMAKE_SYSTEM_NAME} ")
+
 if(CMAKE_SYSTEM_NAME MATCHES "Linux")
     set(ME_COM
         ME_COM_COMPILER=1
@@ -62,20 +66,18 @@ include_directories(deps/mpr-mbedtls/)
 include_directories(deps/mpr-openssl/)
 include_directories(deps/osdep/)
 include_directories(deps/pcre/)
+include_directories(deps/appweb/)
 include_directories(inc/)
-
-
 
 set(LIBRARY_OUTPUT_PATH build/lib) 
 set(EXECUTABLE_OUTPUT_PATH build/out)
-
-
 
 add_library(pcre ./deps/pcre/pcre.c)
 add_library(mpr ./deps/mpr/mprLib.c)
 add_library(mpr-mbedtls ./deps/mpr-mbedtls/mpr-mbedtls.c)
 add_library(http ./deps/http/httpLib.c)
 add_library(mbedtls ./deps/mbedtls/mbedtls.c)
+add_library(appweb ./deps/appweb/config.c)
 
 link_directories(${LIBRARY_OUTPUT_PATH})
 
@@ -85,14 +87,10 @@ set(self_build_libs
     mpr
     mpr-mbedtls
     mbedtls
+    appweb
 )
 
-add_executable (mo 
-    "src/server.c"
-    "src/config.c"
-)
-
-
+add_executable (mo "src/server.cc")
 
 target_compile_definitions(pcre
     PRIVATE
@@ -123,15 +121,22 @@ target_compile_definitions(mbedtls
     MBEDTLS_USER_CONFIG_FILE="embedtls.h"        
 )
 
+target_compile_definitions(appweb
+    PRIVATE
+    ${ME_COM}
+)
+
 target_link_libraries(mo
     ${sys_libs}
     ${self_build_libs}
 )
 
 
+##########################################################
 #add_library(mpr-openssl ./deps/mpr-openssl/mpr-openssl.c)
 
 #target_compile_definitions(mpr-openssl
 #    PRIVATE
 #    ${ME_COM}
 #)
+##########################################################
