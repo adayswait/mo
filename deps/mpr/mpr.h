@@ -512,7 +512,9 @@ typedef struct MprSpin {
 #undef unlock
 #undef spinlock
 #undef spinunlock
-#define lock(arg)       if (arg && (arg)->mutex) mprLock((arg)->mutex)
+
+//changed from original "lock" into "ilock" to avoid name clash with std::memory
+#define ilock(arg)       if (arg && (arg)->mutex) mprLock((arg)->mutex)
 #define unlock(arg)     if (arg && (arg)->mutex) mprUnlock((arg)->mutex)
 #define spinlock(arg)   if (arg) mprSpinLock((arg)->spin)
 #define spinunlock(arg) if (arg) mprSpinUnlock((arg)->spin)

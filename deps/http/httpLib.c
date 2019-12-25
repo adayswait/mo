@@ -279,7 +279,7 @@ PUBLIC void httpStopEndpoints()
     if ((http = HTTP) == 0) {
         return;
     }
-    lock(http->networks);
+    ilock(http->networks);
     for (next = 0; (endpoint = mprGetNextItem(http->endpoints, &next)) != 0; ) {
         httpStopEndpoint(endpoint);
     }
@@ -299,7 +299,7 @@ PUBLIC void httpStopNetworks(void *data)
     if ((http = HTTP) == 0) {
         return;
     }
-    lock(http->networks);
+    ilock(http->networks);
     for (ITERATE_ITEMS(http->networks, net, next)) {
         if (data == 0 || net->data == data) {
             httpDestroyNet(net);
@@ -364,7 +364,7 @@ static bool isHttpServiceIdle(bool traceRequests)
 
     if ((http = MPR->httpService) != 0) {
         now = http->now;
-        lock(http->networks);
+        ilock(http->networks);
         for (ITERATE_ITEMS(http->networks, net, next)) {
             for (ITERATE_ITEMS(net->streams, stream, nextConn)) {
                 if (stream->state != HTTP_STATE_BEGIN && stream->state != HTTP_STATE_COMPLETE) {
@@ -615,7 +615,7 @@ static void httpTimer(Http *http, MprEvent *event)
     active = 0;
 
     updateCurrentDate();
-    lock(http->networks);
+    ilock(http->networks);
 
     if (!mprGetDebugMode()) {
         for (next = 0; (net = mprGetNextItem(http->networks, &next)) != 0; active++) {
@@ -733,7 +733,7 @@ PUBLIC void httpAddNet(HttpNet *net)
     http->now = mprGetTicks();
     updateCurrentDate();
 
-    lock(http);
+    ilock(http);
     if (!http->timer && (!ME_DEBUG || !mprGetDebugMode())) {
         http->timer = mprCreateTimerEvent(NULL, "httpTimer", HTTP_TIMER_PERIOD, httpTimer, http,
             MPR_EVENT_CONTINUOUS | MPR_EVENT_QUICK);
@@ -866,7 +866,7 @@ PUBLIC void httpGetStats(HttpStats *sp)
     mprGetCacheStats(http->sessionCache, &sp->activeSessions, &memSessions);
     sp->memSessions = memSessions;
 
-    lock(http->addresses);
+    ilock(http->addresses);
     for (ITERATE_KEY_DATA(http->addresses, kp, address)) {
         sp->activeRequests += (int) address->counters[HTTP_COUNTER_ACTIVE_REQUESTS].value;
         sp->activeClients++;
@@ -947,7 +947,7 @@ PUBLIC bool httpConfigure(HttpConfigureProc proc, void *data, MprTicks timeout)
         timeout = MAXINT;
     }
     do {
-        lock(http->networks);
+        ilock(http->networks);
         /* Own request will count as 1 */
         if (mprGetListLength(http->networks) == 0) {
             (proc)(data);
@@ -13028,7 +13028,7 @@ PUBLIC void httpPruneMonitors()
 
     http = HTTP;
     period = max(http->monitorPeriod, ME_HTTP_MONITOR_PERIOD);
-    lock(http->addresses);
+    ilock(http->addresses);
     for (ITERATE_KEY_DATA(http->addresses, kp, address)) {
         if (address->banUntil && address->banUntil < http->now) {
             httpLog(http->trace, "monitor.ban.stop", "context", "client:'%s'", kp->key);
@@ -13075,7 +13075,7 @@ static void checkMonitor(HttpMonitor *monitor, MprEvent *event)
         /*
             Check the monitor for each active client address
          */
-        lock(http->addresses);
+        ilock(http->addresses);
         for (ITERATE_KEY_DATA(http->addresses, kp, address)) {
             counter = &address->counters[monitor->counterIndex];
 
@@ -13085,7 +13085,7 @@ static void checkMonitor(HttpMonitor *monitor, MprEvent *event)
              */
             unlock(http->addresses);
             checkCounter(monitor, counter, kp->key);
-            lock(http->addresses);
+            ilock(http->addresses);
         }
         if (mprGetHashLength(http->addresses) == 0) {
             stopMonitors();
@@ -13176,7 +13176,7 @@ static void startMonitors()
         return;
     }
     http = HTTP;
-    lock(http);
+    ilock(http);
     if (!http->monitorsStarted) {
         for (ITERATE_ITEMS(http->monitors, monitor, next)) {
             if (!monitor->timer) {
@@ -13196,7 +13196,7 @@ static void stopMonitors()
     int             next;
 
     http = HTTP;
-    lock(http);
+    ilock(http);
     if (http->monitorsStarted) {
         for (ITERATE_ITEMS(http->monitors, monitor, next)) {
             if (monitor->timer) {
@@ -13230,7 +13230,7 @@ PUBLIC HttpAddress *httpMonitorAddress(HttpNet *net, int counterIndex)
     if (counterIndex <= 0) {
         counterIndex = HTTP_COUNTER_MAX;
     }
-    lock(http->addresses);
+    ilock(http->addresses);
     address = mprLookupKey(http->addresses, net->ip);
     if ((address = growAddresses(net, address, counterIndex)) == 0) {
         unlock(http->addresses);
@@ -13383,7 +13383,7 @@ PUBLIC void httpDumpCounters()
     mprLog(0, 0, "Active processes   %d\n", mprGetListLength(MPR->cmdService->cmds));
     mprLog(0, 0, "Active clients     %d\n", mprGetHashLength(http->addresses));
 
-    lock(http->addresses);
+    ilock(http->addresses);
     for (ITERATE_KEY_DATA(http->addresses, kp, address)) {
         mprLog(0, 0, "Client             %s\n", kp->key);
         for (i = 0; i < address->ncounters; i++) {
@@ -13698,7 +13698,7 @@ PUBLIC HttpNet *httpCreateNet(MprDispatcher *dispatcher, HttpEndpoint *endpoint,
         httpSetNetProtocol(net, protocol);
     }
 
-    lock(http);
+    ilock(http);
     net->seqno = ++http->totalConnections;
     unlock(http);
     httpAddNet(net);
@@ -13983,7 +13983,7 @@ static void netTimeout(HttpNet *net, MprEvent *mprEvent)
  */
 PUBLIC void httpUseWorker(HttpNet *net, MprDispatcher *dispatcher, MprEvent *event)
 {
-    lock(net->http);
+    ilock(net->http);
     net->oldDispatcher = net->dispatcher;
     net->dispatcher = dispatcher;
     net->worker = 1;
@@ -13995,7 +13995,7 @@ PUBLIC void httpUseWorker(HttpNet *net, MprDispatcher *dispatcher, MprEvent *eve
 
 PUBLIC void httpUsePrimary(HttpNet *net)
 {
-    lock(net->http);
+    ilock(net->http);
     assert(net->worker);
     assert(net->oldDispatcher && net->dispatcher != net->oldDispatcher);
     net->dispatcher = net->oldDispatcher;
@@ -14044,7 +14044,7 @@ PUBLIC MprSocket *httpStealSocket(HttpNet *net)
     assert(!net->destroyed);
 
     if (!net->destroyed && !net->borrowed) {
-        lock(net->http);
+        ilock(net->http);
         for (ITERATE_ITEMS(net->streams, stream, next)) {
             httpDestroyStream(stream);
             next--;
@@ -21977,7 +21977,7 @@ PUBLIC void httpDestroySession(HttpStream *stream)
     rx = stream->rx;
     assert(http);
 
-    lock(http);
+    ilock(http);
     if ((sp = httpGetSession(stream, 0)) != 0) {
         cookie = rx->route->cookie ? rx->route->cookie : HTTP_SESSION_COOKIE;
         httpRemoveCookie(stream, cookie);
@@ -22027,7 +22027,7 @@ PUBLIC HttpSession *httpGetSession(HttpStream *stream, int create)
             }
         }
         if (!rx->session && create) {
-            lock(http);
+            ilock(http);
             thisSeqno = ++seqno;
             id = sfmt("%08x%08x%d", PTOI(stream->seqno) + PTOI(stream), (int) mprGetTicks(), thisSeqno);
             id = mprGetMD5WithPrefix(id, slen(id), "-http.session-");
@@ -22618,7 +22618,7 @@ PUBLIC HttpStream *httpCreateStream(HttpNet *net, bool peerCreated)
 #endif
     httpSetState(stream, HTTP_STATE_BEGIN);
 
-    lock(http);
+    ilock(http);
     stream->seqno = ++http->totalStreams;
     unlock(http);
 
@@ -23243,13 +23243,13 @@ PUBLIC HttpStream *httpFindStream(uint64 seqno, HttpEventProc proc, void *data)
         which then marks networks.
      */
     stream = 0;
-    lock(MPR->eventService);
-    lock(HTTP->networks);
+    ilock(MPR->eventService);
+    ilock(HTTP->networks);
     for (ITERATE_ITEMS(HTTP->networks, net, nextNet)) {
         /*
             This lock prevents the stream being freed and from being removed from HttpNet.networks
          */
-        lock(net->streams);
+        ilock(net->streams);
         for (ITERATE_ITEMS(net->streams, stream, nextStream)) {
             if (stream->seqno == seqno && !stream->destroyed) {
                 if (proc) {
@@ -23731,7 +23731,7 @@ PUBLIC void httpDetailFormatter(HttpTrace *trace, cchar *event, cchar *type, int
     bool        hex;
 
     assert(trace);
-    lock(trace);
+    ilock(trace);
 
     hex = (trace->flags & HTTP_TRACE_HEX) ? 1 : 0;
 
@@ -23798,7 +23798,7 @@ PUBLIC void httpSimpleTraceFormatter(HttpTrace *trace, cchar *event, cchar *type
     assert(event);
     assert(type);
 
-    lock(trace);
+    ilock(trace);
     if (!trace->buf) {
         trace->buf = mprCreateBuf(0, 0);
     }
@@ -23966,7 +23966,7 @@ static int backupTraceLogFile(HttpTrace *trace)
         return 0;
     }
     if (trace->backupCount > 0 || (trace->flags & MPR_LOG_ANEW)) {
-        lock(trace);
+        ilock(trace);
         if (trace->path && trace->parent && smatch(trace->parent->path, trace->path)) {
             unlock(trace);
             return backupTraceLogFile(trace->parent);
@@ -24065,7 +24065,7 @@ PUBLIC void httpWriteTraceLogFile(HttpTrace *trace, cchar *buf, ssize len)
 {
     static int  skipCheck = 0;
 
-    lock(trace);
+    ilock(trace);
     if (trace->backupCount > 0) {
         if ((++skipCheck % 50) == 0) {
             backupTraceLogFile(trace);

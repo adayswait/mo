@@ -892,7 +892,7 @@ static int upgradeOss(MprSocket *sp, MprSsl *ssl, cchar *requiredPeerName)
     sp->sslSocket = osp;
     sp->ssl = ssl;
 
-    lock(ssl);
+    ilock(ssl);
     if (configOss(ssl, sp->flags, &sp->errorMsg) < 0) {
         unlock(ssl);
         return MPR_ERR_CANT_INITIALIZE;
@@ -1483,7 +1483,7 @@ static int sniHostname(SSL *handle, int *ad, void *arg)
     if ((ssl = (sp->ssl->matchSsl)(sp, hostname)) == 0) {
         return SSL_TLSEXT_ERR_ALERT_FATAL;
     }
-    lock(ssl);
+    ilock(ssl);
     if (configOss(ssl, sp->flags, &sp->errorMsg) < 0) {
         unlock(ssl);
         return SSL_TLSEXT_ERR_ALERT_FATAL;

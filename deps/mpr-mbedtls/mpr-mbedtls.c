@@ -328,7 +328,7 @@ static int upgradeMbed(MprSocket *sp, MprSsl *ssl, cchar *peerName)
 
     assert(sp);
 
-    lock(ssl);
+    ilock(ssl);
     if (configMbed(ssl, sp->flags, &sp->errorMsg) < 0) {
         unlock(ssl);
         return MPR_ERR_CANT_INITIALIZE;
@@ -654,7 +654,7 @@ PUBLIC int sniCallback(void *unused, mbedtls_ssl_context *ctx, cuchar *host, siz
     if ((ssl = (sp->ssl->matchSsl)(sp, hostname)) == 0) {
         return MPR_ERR_CANT_FIND;
     }
-    lock(ssl);
+    ilock(ssl);
     if (configMbed(ssl, sp->flags, &sp->errorMsg) < 0) {
         unlock(ssl);
         return MPR_ERR_CANT_INITIALIZE;
