@@ -1,11 +1,11 @@
 cmake_minimum_required (VERSION 3.8)
 
-project(mo CXX C)
+project(mo LANGUAGES C CXX)
 
-set (CMAKE_CXX_FLAGS "-std=c++11")
-set (CMAKE_C_FLAGS "-std=gnu11")
+set(CMAKE_C_STANDARD 11)
+set(CMAKE_CXX_STANDARD 11)
 
-message(status "platform: ${CMAKE_SYSTEM_NAME} ")
+message(STATUS "platform: ${CMAKE_SYSTEM_NAME} ")
 
 if(CMAKE_SYSTEM_NAME MATCHES "Linux")
     set(ME_COM
