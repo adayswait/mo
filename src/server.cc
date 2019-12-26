@@ -41,6 +41,13 @@ static void doAction(HttpConn *conn)
 #endif
 }
 
+void test(HttpConn *conn)
+{
+    httpSetStatus(conn, 200);
+    httpAddHeaderString(conn, "Content-Type", "text/plain");
+    httpWrite(conn->writeq, "Hello World\n");
+    httpFinalize(conn);
+}
 /*
     Create a simple stand-alone web server
  */
@@ -69,6 +76,8 @@ int main(int argc, char **argv)
     }
 
     httpDefineAction("/v1/action", doAction);
+    httpDefineAction("/v1/test", test);
+
 
     if (httpStartEndpoints() < 0)
     {
