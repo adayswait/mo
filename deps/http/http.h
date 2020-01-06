@@ -4546,8 +4546,8 @@ PUBLIC bool httpAuthenticate(HttpStream *stream);
 /**
     Test if a user has the required abilities
     @param stream HttpStream stream object created via #httpCreateStream object.
-    @param abilities Comma separated list of abilities to test for. If null, then use the required abilities defined
-        for the current request route.
+    @param abilities Comma separated list of abilities or roles to test for. If null, then use the required abilities
+        efined for the current request route.
     @return True if the user has all the required abilities
     @ingroup HttpAuth
     @stability Stable
