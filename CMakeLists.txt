@@ -90,7 +90,8 @@ set(self_build_libs
     appweb
 )
 
-add_executable (mo "src/server.cc")
+add_executable (mo_server "src/server.cc")
+add_executable (mo_client "src/client.cc")
 
 target_compile_definitions(pcre
     PRIVATE
@@ -126,7 +127,11 @@ target_compile_definitions(appweb
     ${ME_COM}
 )
 
-target_link_libraries(mo
+target_link_libraries(mo_client
+    ${sys_libs}
+    ${self_build_libs}
+)
+target_link_libraries(mo_server
     ${sys_libs}
     ${self_build_libs}
 )

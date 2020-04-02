@@ -1,7 +1,8 @@
 #include "appweb.h"
+#include "mpr.h"
 #include <iostream>
 
-static void doAction(HttpConn *conn)
+static void testAction(HttpConn *conn)
 {
     std::cout << "handling" << std::endl;
     HttpQueue *q;
@@ -19,11 +20,34 @@ static void doAction(HttpConn *conn)
     httpAddHeaderString(conn, "Content-Type", "text/html");
     httpSetHeaderString(conn, "Cache-Control", "no-cache");
 
-    httpWrite(q, "<html><title>v1/action</title><body>\r\n");
-    httpWrite(q, "<p>param: %s</p>\n",
-              httpGetParam(conn, "param", "undefined"));
+    HttpRoute *route = conn->rx->route;
+    cchar *url = (route->prefix && *route->prefix) ? route->prefix : "/";
+
+    httpWrite(q, "<html><title>%s</title><body>\r\n", url);
+    httpWrite(q, "<p>param: %s</p>\n", httpGetParam(conn, "param", "undefined"));
     httpWrite(q, "<p>method: %s</p>\n", conn->rx->method);
     httpWrite(q, "<p>client: %s:%d</p>\n", conn->ip, conn->port);
+    httpWrite(q, "<p>pattern: %s</p>\n", route->prefix);
+    httpWrite(q, "<p>startSegment: %s</p>\n", route->startSegment);
+    httpWrite(q, "<p>startWith: %s</p>\n", route->startWith);
+    httpWrite(q, "<p>optimizedPattern: %s</p>\n", route->optimizedPattern);
+    httpWrite(q, "<p>prefix: %s</p>\n", route->prefix);
+    httpWrite(q, "<p>tplate: %s</p>\n", route->tplate);
+    httpWrite(q, "<p>targetRule: %s</p>\n", route->targetRule);
+    httpWrite(q, "<p>target: %s</p>\n", route->target);
+    httpWrite(q, "<p>documents: %s</p>\n", route->documents);
+    httpWrite(q, "<p>home: %s</p>\n", route->home);
+    httpWrite(q, "<p>envPrefix: %s</p>\n", route->envPrefix);
+    httpWrite(q, "<p>mode: %s</p>\n", route->mode);
+    httpWrite(q, "<p>database: %s</p>\n", route->database);
+    httpWrite(q, "<p>responseFormat: %s</p>\n", route->responseFormat);
+    httpWrite(q, "<p>clientConfig: %s</p>\n", route->clientConfig);
+    httpWrite(q, "<p>defaultLanguage: %s</p>\n", route->defaultLanguage);
+    httpWrite(q, "<p>cookie: %s</p>\n", route->cookie);
+    httpWrite(q, "<p>corsOrigin: %s</p>\n", route->corsOrigin);
+    httpWrite(q, "<p>corsHeaders: %s</p>\n", route->corsHeaders);
+    httpWrite(q, "<p>corsMethods: %s</p>\n", route->corsMethods);
+    httpWrite(q, "<p>webSocketsProtocol: %s</p>\n", route->webSocketsProtocol);
     httpWrite(q, "</body></html>\r\n");
 
     /*
@@ -41,11 +65,47 @@ static void doAction(HttpConn *conn)
 #endif
 }
 
-void test(HttpConn *conn)
+void testCookie(HttpConn *conn)
 {
+    cchar *testCookie = "testCookie";
+    HttpRoute *route = conn->rx->route;
+    cchar *url = (route->optimizedPattern && *route->optimizedPattern) ? route->optimizedPattern : "/";
+    int flags = (route->flags & HTTP_ROUTE_VISIBLE_SESSION) ? 0 : HTTP_COOKIE_HTTP;
+    cchar *recvedTestCookie = httpGetCookie(conn, testCookie);
+    if (recvedTestCookie)
+    {
+        httpWrite(conn->writeq, "recv cookie : %s=%s\n", testCookie, recvedTestCookie);
+    }
+    else
+    {
+        cchar *_cookie = "this is a test cookie";
+        httpWrite(conn->writeq, "no cookie recved, set cookie : %s=%s\n", testCookie, _cookie);
+        httpSetCookie(conn, testCookie, _cookie, url, NULL, 0, flags);
+    }
+
     httpSetStatus(conn, 200);
     httpAddHeaderString(conn, "Content-Type", "text/plain");
-    httpWrite(conn->writeq, "Hello World\n");
+    httpFinalize(conn);
+}
+void testSession(HttpConn *conn)
+{
+    cchar *testSession = "testSession";
+
+    HttpSession *session = httpGetSession(conn, 0);
+    if (session)
+    {
+        cchar *recvedSession = (cchar *)(mprLookupKey(session->data, testSession));
+        httpWrite(conn->writeq, "with session : %s=%s\n", testSession, recvedSession);
+    }
+    else
+    {
+        cchar *_session = "1234567890";
+        httpWrite(conn->writeq, "without session, set session : %s=%s\n", testSession, _session);
+        httpSetSessionVar(conn, testSession, _session);
+    }
+
+    httpSetStatus(conn, 200);
+    httpAddHeaderString(conn, "Content-Type", "text/plain");
     httpFinalize(conn);
 }
 /*
@@ -75,9 +135,9 @@ int main(int argc, char **argv)
         return -1;
     }
 
-    httpDefineAction("/v1/action", doAction);
-    httpDefineAction("/v1/test", test);
-
+    httpDefineAction("/v1/test_action", testAction);
+    httpDefineAction("/v1/test_cookie", testCookie);
+    httpDefineAction("/v1/test_session", testSession);
 
     if (httpStartEndpoints() < 0)
     {
